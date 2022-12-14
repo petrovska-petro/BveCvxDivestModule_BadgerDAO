@@ -49,6 +49,7 @@ abstract contract ModuleConstants {
 
     // NOTE: all CL eth feeds are expressed in 18 decimals
     uint256 internal constant FEED_DIVISOR_ETH = 1e18;
+    uint256 internal constant FEED_USDC_MULTIPLIER = 1e6;
 
     uint256 constant MAX_BPS = 10_000;
     uint256 constant MAX_FACTOR_WD = 7_000;

@@ -37,8 +37,8 @@ contract ModuleUtils is ModuleConstants {
             CL_FEED_DAY_HEARTBEAT
         );
         // Divide by the rate from oracle since it is dai expressed in eth
-        // FEED_DIVISOR_ETH has 1e18 precision
-        usdcAmount_ = (_wethAmount * FEED_DIVISOR_ETH) / usdcInWeth;
+        // FEED_USDC_MULTIPLIER has 1e6 precision
+        usdcAmount_ = (_wethAmount * FEED_USDC_MULTIPLIER) / usdcInWeth;
     }
 
     function fetchPriceFromClFeed(IAggregatorV3 _feed, uint256 _maxStalePeriod)
