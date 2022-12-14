@@ -27,18 +27,18 @@ contract ModuleUtils is ModuleConstants {
         usdcAmount_ = (_cvxAmount * cvxInEth) / FEED_DIVISOR_ETH;
     }
 
-    function getWethAmountInDai(uint256 _wethAmount)
+    function getWethAmountInUsdc(uint256 _wethAmount)
         internal
         view
-        returns (uint256 daiAmount_)
+        returns (uint256 usdcAmount_)
     {
-        uint256 daiInWeth = fetchPriceFromClFeed(
-            DAI_ETH_FEED,
+        uint256 usdcInWeth = fetchPriceFromClFeed(
+            USDC_ETH_FEED,
             CL_FEED_DAY_HEARTBEAT
         );
         // Divide by the rate from oracle since it is dai expressed in eth
         // FEED_DIVISOR_ETH has 1e18 precision
-        daiAmount_ = (_wethAmount * FEED_DIVISOR_ETH) / daiInWeth;
+        usdcAmount_ = (_wethAmount * FEED_DIVISOR_ETH) / usdcInWeth;
     }
 
     function fetchPriceFromClFeed(IAggregatorV3 _feed, uint256 _maxStalePeriod)

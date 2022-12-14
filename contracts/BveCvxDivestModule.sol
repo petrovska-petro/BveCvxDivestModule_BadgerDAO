@@ -17,7 +17,7 @@ import {ModuleUtils} from "./ModuleUtils.sol";
 /// @title   BveCvxDivestModule
 /// @dev  Allows whitelisted executors to trigger `performUpkeep` with limited scoped
 /// in our case to carry the divesting of bveCVX into USDC whenever unlocks in schedules
-/// occurs with a breathing factor of 60% to allow users to withdraw
+/// occurs with a breathing factor determined by `factorWd` to allow users to withdraw
 contract BveCvxDivestModule is
     ModuleUtils,
     KeeperCompatibleInterface,
@@ -28,6 +28,7 @@ contract BveCvxDivestModule is
 
     /* ========== STATE VARIABLES ========== */
     address public guardian;
+    uint256 public factorWd;
     uint256 public initialcvxTimestampWeekSelling;
     uint256 public weeklyCvxSold;
 
@@ -37,14 +38,23 @@ contract BveCvxDivestModule is
 
     event ExecutorAdded(address indexed _user, uint256 _timestamp);
     event ExecutorRemoved(address indexed _user, uint256 _timestamp);
+
     event GuardianUpdated(
         address indexed newGuardian,
         address indexed oldGuardian,
         uint256 timestamp
     );
+    event FactorWdUpdated(
+        uint256 newMaxFactorWd,
+        uint256 oldMaxFactorWd,
+        uint256 timestamp
+    );
 
     constructor(address _guardian) {
         guardian = _guardian;
+
+        // as per decision defaulted to 70%
+        factorWd = 7_000;
     }
 
     /***************************************
@@ -95,9 +105,22 @@ contract BveCvxDivestModule is
     /// @param _guardian Address which will beccome guardian
     function setGuardian(address _guardian) external onlyGovernance {
         require(_guardian != address(0), "zero-address!");
-        address oldGuardian = _guardian;
+        address oldGuardian = guardian;
         guardian = _guardian;
         emit GuardianUpdated(_guardian, oldGuardian, block.timestamp);
+    }
+
+    /// @dev Updates the guardian address
+    /// @notice Only callable by governance or guardian
+    /// @param _factor New factor value to be set for `
+    function setWithdrawableFactor(uint256 _factor)
+        external
+        onlyGovernanceOrGuardian
+    {
+        require(_factor <= MAX_FACTOR_WD, ">MAX_FACTOR_WD!");
+        uint256 oldmaxFactorWd = factorWd;
+        factorWd = _factor;
+        emit FactorWdUpdated(_factor, oldmaxFactorWd, block.timestamp);
     }
 
     /// @dev Pauses the contract, which prevents executing performUpkeep.
@@ -241,7 +264,7 @@ contract BveCvxDivestModule is
                     recipient: TREASURY,
                     deadline: type(uint256).max,
                     amountIn: wethBal,
-                    amountOutMinimum: (getWethAmountInDai(wethBal) *
+                    amountOutMinimum: (getWethAmountInUsdc(wethBal) *
                         MIN_OUT_SWAP) / MAX_BPS,
                     sqrtPriceLimitX96: 0 // Inactive param
                 });

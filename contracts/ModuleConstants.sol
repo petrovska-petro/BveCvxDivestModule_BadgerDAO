@@ -51,7 +51,7 @@ abstract contract ModuleConstants {
     uint256 internal constant FEED_DIVISOR_ETH = 1e18;
 
     uint256 constant MAX_BPS = 10_000;
-    uint256 constant MAX_FACTOR_WD = 6_000;
+    uint256 constant MAX_FACTOR_WD = 7_000;
     uint256 constant MIN_OUT_SWAP = 9_850;
 
     // hardcoded timestamp where keeper always should return `false`
