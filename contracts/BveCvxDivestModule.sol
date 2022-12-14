@@ -325,7 +325,7 @@ contract BveCvxDivestModule is
     function totalCvxWithdrawable() public view returns (uint256 totalWdCvx) {
         /// @dev check avail CONVEX to avoid wd reverts
         uint256 cvxInVault = CVX.balanceOf(address(BVE_CVX));
-        uint256 cvxInStrat = CVX.balanceOf(address(BVECVX_STRAT));
+        uint256 cvxInStrat = CVX.balanceOf(BVECVX_STRAT);
         (, uint256 unlockableStrat, , ) = LOCKER.lockedBalances(BVECVX_STRAT);
         totalWdCvx = cvxInVault + cvxInStrat + unlockableStrat;
     }

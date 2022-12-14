@@ -4,8 +4,11 @@ pragma solidity ^0.8.4;
 interface ICvxLocker {
     struct LockedBalance {
         uint112 amount;
+        uint112 boosted;
         uint32 unlockTime;
     }
+
+    function checkpointEpoch() external;
 
     function epochCount() external view returns (uint256);
 

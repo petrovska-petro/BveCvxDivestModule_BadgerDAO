@@ -16,9 +16,10 @@ abstract contract ModuleConstants {
     IGnosisSafe public constant SAFE = IGnosisSafe(GOVERNANCE);
 
     // badger product
-    IBveCvx constant BVE_CVX =
+    IBveCvx internal constant BVE_CVX =
         IBveCvx(0xfd05D3C7fe2924020620A8bE4961bBaA747e6305);
-    address constant BVECVX_STRAT = 0x898111d1F4eB55025D0036568212425EE2274082;
+    address internal constant BVECVX_STRAT =
+        0x898111d1F4eB55025D0036568212425EE2274082;
 
     // convex locker v2
     ICvxLocker internal constant LOCKER =
