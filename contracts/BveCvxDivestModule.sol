@@ -31,7 +31,7 @@ contract BveCvxDivestModule is
     address public guardian;
     uint256 public factorWd;
     uint256 public weeklyCvxSpotAmount;
-    uint256 public lastBveCvxWdTimestamp;
+    uint256 public lastEpochIdWithdraw;
 
     EnumerableSet.AddressSet internal _executors;
 
@@ -174,7 +174,7 @@ contract BveCvxDivestModule is
         if (
             totalCvxWithdrawable() > 0 &&
             BVE_CVX.balanceOf(address(SAFE)) > 0 &&
-            (block.timestamp - lastBveCvxWdTimestamp) > ONE_WEEK &&
+            LOCKER.epochCount() > lastEpochIdWithdraw &&
             block.timestamp <= KEEPER_DEADLINE
         ) {
             upkeepNeeded = true;
@@ -192,7 +192,7 @@ contract BveCvxDivestModule is
     {
         /// @dev safety check, ensuring onchain module is config
         require(SAFE.isModuleEnabled(address(this)), "no-module-enabled!");
-        if ((block.timestamp - lastBveCvxWdTimestamp) > ONE_WEEK) {
+        if (LOCKER.epochCount() > lastEpochIdWithdraw) {
             // 1. wd bvecvx with factor 0.6
             _withdrawBveCvx();
             // 2. swap cvx balance to weth
@@ -234,7 +234,7 @@ contract BveCvxDivestModule is
             uint256 cvxSpotSell = weeklyCvxSpotAmount > cvxBal
                 ? cvxBal
                 : weeklyCvxSpotAmount;
-            lastBveCvxWdTimestamp = block.timestamp;
+            lastEpochIdWithdraw = LOCKER.epochCount();
 
             if (cvxSpotSell > 0) {
                 // 1. Approve CVX into curve pool

@@ -7,6 +7,8 @@ interface ICvxLocker {
         uint32 unlockTime;
     }
 
+    function epochCount() external view returns (uint256);
+
     function lockedBalances(address _user)
         external
         view

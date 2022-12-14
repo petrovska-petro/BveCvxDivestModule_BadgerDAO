@@ -56,6 +56,4 @@ abstract contract ModuleConstants {
 
     // hardcoded timestamp where keeper always should return `false`
     uint256 constant KEEPER_DEADLINE = 1672963200;
-
-    uint256 constant ONE_WEEK = 1 weeks;
 }
