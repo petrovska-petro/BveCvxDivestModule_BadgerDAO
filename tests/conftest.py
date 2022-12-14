@@ -63,7 +63,7 @@ def bvecvx_module(deployer, techops):
 
 # https://docs.pytest.org/en/6.2.x/fixture.html#autouse-fixtures-fixtures-you-don-t-have-to-request
 @pytest.fixture(autouse=True)
-def config_module(safe, bvecvx_module, bvecvx, cvx, governance, techops, keeper):
+def config_module(safe, bvecvx_module, bvecvx, governance, techops, keeper):
     # enable module
     safe.enableModule(bvecvx_module.address, {"from": safe})
     assert bvecvx_module.address in safe.getModules()
@@ -75,6 +75,9 @@ def config_module(safe, bvecvx_module, bvecvx, cvx, governance, techops, keeper)
     # ensure `voter` is WL in `bveCVX` otherwise wd will revert
     bvecvx.approveContractAccess(safe, {"from": techops})
 
+
+@pytest.fixture
+def seed_vault(cvx):
     # sends cvx funds to `bveCVX` vault
     CVX_LOCKER = "0x72a19342e8F1838460eBFCCEf09F6585e32db86E"
     BVECVX_VAULT = "0xfd05D3C7fe2924020620A8bE4961bBaA747e6305"

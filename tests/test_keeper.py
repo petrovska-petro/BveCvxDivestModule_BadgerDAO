@@ -9,7 +9,7 @@ def is_upkeep_needed(bvecvx_module, keeper):
 
 
 def test_perform_upkeep_keeper(
-    bvecvx_module, cvx_locker, bvecvx, usdc, governance, treasury, keeper
+    bvecvx_module, cvx_locker, bvecvx, usdc, governance, treasury, keeper, seed_vault
 ):
     upkeep_needed = is_upkeep_needed(bvecvx_module, keeper)
     assert upkeep_needed
