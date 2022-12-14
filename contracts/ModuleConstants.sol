@@ -43,8 +43,8 @@ abstract contract ModuleConstants {
     // CL feed oracles
     IAggregatorV3 internal constant CVX_ETH_FEED =
         IAggregatorV3(0xC9CbF687f43176B302F03f5e58470b77D07c61c6);
-    IAggregatorV3 internal constant DAI_ETH_FEED =
-        IAggregatorV3(0x773616E4d11A78F511299002da57A0a94577F1f4);
+    IAggregatorV3 internal constant USDC_ETH_FEED =
+        IAggregatorV3(0x986b5E1e1755e3C2440e960477f25201B0a8bbD4);
     uint256 internal constant CL_FEED_DAY_HEARTBEAT = 24 hours;
 
     // NOTE: all CL eth feeds are expressed in 18 decimals
@@ -57,7 +57,5 @@ abstract contract ModuleConstants {
     // hardcoded timestamp where keeper always should return `false`
     uint256 constant KEEPER_DEADLINE = 1672963200;
 
-    // max selling spot weekly
-    uint256 constant MAX_WEEKLY_CVX_SPOT = 5_000e18;
     uint256 constant ONE_WEEK = 1 weeks;
 }

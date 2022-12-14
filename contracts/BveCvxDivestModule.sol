@@ -30,8 +30,8 @@ contract BveCvxDivestModule is
     /* ========== STATE VARIABLES ========== */
     address public guardian;
     uint256 public factorWd;
-    uint256 public initialcvxTimestampWeekSelling;
-    uint256 public weeklyCvxSold;
+    uint256 public weeklyCvxSpotAmount;
+    uint256 public lastBveCvxWdTimestamp;
 
     EnumerableSet.AddressSet internal _executors;
 
@@ -50,12 +50,19 @@ contract BveCvxDivestModule is
         uint256 oldMaxFactorWd,
         uint256 timestamp
     );
+    event WeeklyCvxSpotAmountUpdated(
+        uint256 newWeeklyCvxSpotAmount,
+        uint256 oldWeeklyCvxSpotAmount,
+        uint256 timestamp
+    );
 
     constructor(address _guardian) {
         guardian = _guardian;
 
         // as per decision defaulted to 70%
         factorWd = 7_000;
+        // as per decision defaulted to 5k/weekly
+        weeklyCvxSpotAmount = 5_000e18;
     }
 
     /***************************************
@@ -111,9 +118,9 @@ contract BveCvxDivestModule is
         emit GuardianUpdated(_guardian, oldGuardian, block.timestamp);
     }
 
-    /// @dev Updates the guardian address
-    /// @notice Only callable by governance or guardian
-    /// @param _factor New factor value to be set for `
+    /// @dev Updates the withdrawable factor
+    /// @notice Only callable by governance or guardian. Guardian for agility.
+    /// @param _factor New factor value to be set for `factorWd`
     function setWithdrawableFactor(uint256 _factor)
         external
         onlyGovernanceOrGuardian
@@ -122,6 +129,22 @@ contract BveCvxDivestModule is
         uint256 oldmaxFactorWd = factorWd;
         factorWd = _factor;
         emit FactorWdUpdated(_factor, oldmaxFactorWd, block.timestamp);
+    }
+
+    /// @dev Updates weekly cvx amount allowance to sell in spot
+    /// @notice Only callable by governance or guardian. Guardian for agility.
+    /// @param _amount New amount value to be set for `weeklyCvxSpotAmount`
+    function setWeeklyCvxSpotAmount(uint256 _amount)
+        external
+        onlyGovernanceOrGuardian
+    {
+        uint256 oldWeeklyCvxSpotAmount = weeklyCvxSpotAmount;
+        weeklyCvxSpotAmount = _amount;
+        emit WeeklyCvxSpotAmountUpdated(
+            _amount,
+            oldWeeklyCvxSpotAmount,
+            block.timestamp
+        );
     }
 
     /// @dev Pauses the contract, which prevents executing performUpkeep.
@@ -147,13 +170,11 @@ contract BveCvxDivestModule is
         whenNotPaused
         returns (bool upkeepNeeded, bytes memory checkData)
     {
-        uint256 totalWdBveCvx = totalCvxWithdrawable();
-        uint256 bveCVXSafeBal = BVE_CVX.balanceOf(address(SAFE));
-
         // NOTE: if there is anything available to wd, keeper will proceed & ts lower than 00:00 utc 6th Jan
         if (
-            totalWdBveCvx > 0 &&
-            bveCVXSafeBal > 0 &&
+            totalCvxWithdrawable() > 0 &&
+            BVE_CVX.balanceOf(address(SAFE)) > 0 &&
+            (block.timestamp - lastBveCvxWdTimestamp) > ONE_WEEK &&
             block.timestamp <= KEEPER_DEADLINE
         ) {
             upkeepNeeded = true;
@@ -171,12 +192,14 @@ contract BveCvxDivestModule is
     {
         /// @dev safety check, ensuring onchain module is config
         require(SAFE.isModuleEnabled(address(this)), "no-module-enabled!");
-        // 1. wd bvecvx with factor 0.6
-        _withdrawBveCvx();
-        // 2. swap cvx balance to weth
-        _swapCvxForWeth();
-        // 3. swap weth to usdc and send to treasury
-        _swapWethToUsdc();
+        if ((block.timestamp - lastBveCvxWdTimestamp) > ONE_WEEK) {
+            // 1. wd bvecvx with factor 0.6
+            _withdrawBveCvx();
+            // 2. swap cvx balance to weth
+            _swapCvxForWeth();
+            // 3. swap weth to usdc and send to treasury
+            _swapWethToUsdc();
+        }
     }
 
     /***************************************
@@ -208,18 +231,10 @@ contract BveCvxDivestModule is
     function _swapCvxForWeth() internal {
         uint256 cvxBal = CVX.balanceOf(address(SAFE));
         if (cvxBal > 0) {
-            /// @dev will be used as condition to limit amount sold weekly
-            if (block.timestamp > initialcvxTimestampWeekSelling + ONE_WEEK) {
-                initialcvxTimestampWeekSelling = block.timestamp;
-                weeklyCvxSold = 0;
-            }
-
-            // NOTE: limit the spot selling given 5k/weekly limit
-            uint256 cvxSpotSellLimit = MAX_WEEKLY_CVX_SPOT - weeklyCvxSold;
-            uint256 cvxSpotSell = cvxSpotSellLimit > cvxBal
+            uint256 cvxSpotSell = weeklyCvxSpotAmount > cvxBal
                 ? cvxBal
-                : weeklyCvxSold;
-            weeklyCvxSold += cvxSpotSell;
+                : weeklyCvxSpotAmount;
+            lastBveCvxWdTimestamp = block.timestamp;
 
             if (cvxSpotSell > 0) {
                 // 1. Approve CVX into curve pool
