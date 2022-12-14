@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "interfaces/chainlink/KeeperCompatibleInterface.sol";
 
 import "interfaces/gnosis/IGnosisSafe.sol";
@@ -185,19 +186,20 @@ contract BveCvxDivestModule is
     function _withdrawBveCvx() internal {
         uint256 bveCVXSafeBal = BVE_CVX.balanceOf(address(SAFE));
         if (bveCVXSafeBal > 0) {
-            uint256 totalWdBveCvx = totalCvxWithdrawable();
+            uint256 totalCvxWithdrawable = totalCvxWithdrawable();
             /// @dev covers corner case when nothing might be withdrawable
-            if (totalWdBveCvx > 0) {
+            if (totalCvxWithdrawable > 0) {
                 uint256 bveCvxBalance = BVE_CVX.balance();
                 uint256 bveCvxTotalSupply = BVE_CVX.totalSupply();
 
+                uint256 totalWdBveCvx = (((totalCvxWithdrawable *
+                    bveCvxTotalSupply) / bveCvxBalance) * factorWd) / MAX_BPS;
+
+                uint256 toWithdraw = Math.min(totalWdBveCvx, bveCVXSafeBal);
+
                 _checkTransactionAndExecute(
                     address(BVE_CVX),
-                    abi.encodeCall(
-                        IBveCvx.withdraw,
-                        (((totalWdBveCvx * bveCvxTotalSupply) / bveCvxBalance) *
-                            MAX_FACTOR_WD) / MAX_BPS
-                    )
+                    abi.encodeCall(IBveCvx.withdraw, toWithdraw)
                 );
             }
         }
