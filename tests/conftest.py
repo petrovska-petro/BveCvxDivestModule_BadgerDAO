@@ -3,23 +3,23 @@ from brownie import accounts, interface, BveCvxDivestModule
 
 
 @pytest.fixture
-def deployer(accounts):
+def deployer():
     return accounts[0]
 
 
 @pytest.fixture
-def governance(accounts):
+def governance():
     return accounts.at("0xA9ed98B5Fb8428d68664f3C5027c62A10d45826b", force=True)
 
 
 @pytest.fixture
-def techops(accounts):
+def techops():
     # https://github.com/Badger-Finance/badger-multisig/blob/main/helpers/addresses.py#L54
     return accounts.at("0x86cbD0ce0c087b482782c181dA8d191De18C8275", force=True)
 
 
 @pytest.fixture
-def treasury(accounts):
+def treasury():
     # https://github.com/Badger-Finance/badger-multisig/blob/main/helpers/addresses.py#L60
     return accounts.at("0xD0A7A8B98957b9CD3cFB9c0425AbE44551158e9e", force=True)
 
