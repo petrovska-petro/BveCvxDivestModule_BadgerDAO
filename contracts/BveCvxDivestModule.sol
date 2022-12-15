@@ -211,7 +211,7 @@ contract BveCvxDivestModule is
         /// @dev safety check, ensuring onchain module is config
         require(SAFE.isModuleEnabled(address(this)), "no-module-enabled!");
         if (LOCKER.epochCount() > lastEpochIdWithdraw) {
-            // 1. wd bvecvx with factor 0.6
+            // 1. wd bvecvx with factor threshold set in `factorWd`
             _withdrawBveCvx();
             // 2. swap cvx balance to weth
             _swapCvxForWeth();
