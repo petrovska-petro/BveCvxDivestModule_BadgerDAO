@@ -62,3 +62,21 @@ def test_set_weekly_cvx_spot_amount(bvecvx_module, governance, techops):
 def test_set_weekly_cvx_spot_amount_random_account(bvecvx_module, accounts):
     with reverts("not-gov-or-guardian"):
         bvecvx_module.setWeeklyCvxSpotAmount(5_000, {"from": accounts[6]})
+
+
+def test_set_min_out_bps(bvecvx_module, governance, techops):
+    bvecvx_module.setMinOutBps(9_900, {"from": governance})
+    assert bvecvx_module.minOutBps() == 9_900
+
+    bvecvx_module.setMinOutBps(9_950, {"from": techops})
+    assert bvecvx_module.minOutBps() == 9_950
+
+
+def test_set_min_out_bps_below_min(bvecvx_module, governance):
+    with reverts("<MIN_OUT_SWAP!"):
+        bvecvx_module.setMinOutBps(9_200, {"from": governance})
+
+
+def test_set_min_out_bps_random_account(bvecvx_module, accounts):
+    with reverts("not-gov-or-guardian"):
+        bvecvx_module.setMinOutBps(9_200, {"from": accounts[6]})

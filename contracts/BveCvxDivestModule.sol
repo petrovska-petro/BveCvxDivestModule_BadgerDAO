@@ -32,6 +32,7 @@ contract BveCvxDivestModule is
     uint256 public factorWd;
     uint256 public weeklyCvxSpotAmount;
     uint256 public lastEpochIdWithdraw;
+    uint256 public minOutBps;
 
     EnumerableSet.AddressSet internal _executors;
 
@@ -55,6 +56,11 @@ contract BveCvxDivestModule is
         uint256 oldWeeklyCvxSpotAmount,
         uint256 timestamp
     );
+    event MinOutBpsUpdated(
+        uint256 newMinOutBps,
+        uint256 oldMinOutBps,
+        uint256 timestamp
+    );
 
     constructor(address _guardian) {
         guardian = _guardian;
@@ -63,6 +69,8 @@ contract BveCvxDivestModule is
         factorWd = 7_000;
         // as per decision defaulted to 5k/weekly
         weeklyCvxSpotAmount = 5_000e18;
+        // min bps out defaulted to 9_800
+        minOutBps = 9_800;
     }
 
     /***************************************
@@ -145,6 +153,16 @@ contract BveCvxDivestModule is
             oldWeeklyCvxSpotAmount,
             block.timestamp
         );
+    }
+
+    /// @dev Updates `minOutBps` for providing flexibility slippage control in swaps
+    /// @notice Only callable by governance or guardian. Guardian for agility.
+    /// @param _minBps New min bps out value for swaps
+    function setMinOutBps(uint256 _minBps) external onlyGovernanceOrGuardian {
+        require(_minBps >= MIN_OUT_SWAP, "<MIN_OUT_SWAP!");
+        uint256 oldMinOutBps = minOutBps;
+        minOutBps = _minBps;
+        emit MinOutBpsUpdated(_minBps, oldMinOutBps, block.timestamp);
     }
 
     /// @dev Pauses the contract, which prevents executing performUpkeep.
@@ -254,7 +272,7 @@ contract BveCvxDivestModule is
                             1,
                             0,
                             cvxSpotSell,
-                            (getCvxAmountInEth(cvxSpotSell) * MIN_OUT_SWAP) /
+                            (getCvxAmountInEth(cvxSpotSell) * minOutBps) /
                                 MAX_BPS
                         )
                     )
@@ -282,7 +300,7 @@ contract BveCvxDivestModule is
                     deadline: type(uint256).max,
                     amountIn: wethBal,
                     amountOutMinimum: (getWethAmountInUsdc(wethBal) *
-                        MIN_OUT_SWAP) / MAX_BPS,
+                        minOutBps) / MAX_BPS,
                     sqrtPriceLimitX96: 0 // Inactive param
                 });
             _checkTransactionAndExecute(

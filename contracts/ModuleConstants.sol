@@ -54,7 +54,7 @@ abstract contract ModuleConstants {
 
     uint256 constant MAX_BPS = 10_000;
     uint256 constant MAX_FACTOR_WD = 7_000;
-    uint256 constant MIN_OUT_SWAP = 9_850;
+    uint256 constant MIN_OUT_SWAP = 9_500;
 
     // hardcoded timestamp where keeper always should return `false`
     uint256 constant KEEPER_DEADLINE = 1672963200;
