@@ -69,8 +69,9 @@ contract BveCvxDivestModule is
         factorWd = 7_000;
         // as per decision defaulted to 5k/weekly
         weeklyCvxSpotAmount = 5_000e18;
-        // min bps out defaulted to 9_800
-        minOutBps = 9_800;
+        // min bps out defaulted to 9_750
+        // significant due to curve cvx-eth pool and CL oracle divergences in min amount
+        minOutBps = 9_750;
     }
 
     /***************************************
