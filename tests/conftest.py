@@ -79,6 +79,8 @@ def config_module(safe, bvecvx_module, bvecvx, governance, techops, keeper):
 @pytest.fixture
 def seed_vault(cvx):
     # sends cvx funds to `bveCVX` vault
-    CVX_LOCKER = "0x72a19342e8F1838460eBFCCEf09F6585e32db86E"
+    CVX_REWARDS_CONTRACT = "0xCF50b810E57Ac33B91dCF525C6ddd9881B139332"  # https://etherscan.io/address/0xcf50b810e57ac33b91dcf525c6ddd9881b139332
     BVECVX_VAULT = "0xfd05D3C7fe2924020620A8bE4961bBaA747e6305"
-    cvx.transfer(BVECVX_VAULT, 10_000e18, {"from": accounts.at(CVX_LOCKER, force=True)})
+    cvx.transfer(
+        BVECVX_VAULT, 10_000e18, {"from": accounts.at(CVX_REWARDS_CONTRACT, force=True)}
+    )
