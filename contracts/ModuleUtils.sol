@@ -17,14 +17,14 @@ contract ModuleUtils is ModuleConstants {
     function getCvxAmountInEth(uint256 _cvxAmount)
         internal
         view
-        returns (uint256 usdcAmount_)
+        returns (uint256 ethAmount_)
     {
         uint256 cvxInEth = fetchPriceFromClFeed(
             CVX_ETH_FEED,
             CL_FEED_DAY_HEARTBEAT
         );
         // Divisor is 10^18 and uint256 max ~ 10^77 so this shouldn't overflow for normal amounts
-        usdcAmount_ = (_cvxAmount * cvxInEth) / FEED_DIVISOR_ETH;
+        ethAmount_ = (_cvxAmount * cvxInEth) / FEED_DIVISOR_ETH;
     }
 
     function getWethAmountInUsdc(uint256 _wethAmount)
